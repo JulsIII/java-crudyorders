@@ -1,6 +1,8 @@
 package com.lambdaschool.orders.services;
 
 import com.lambdaschool.orders.models.Customer;
+import com.lambdaschool.orders.models.Order;
+import com.lambdaschool.orders.models.Payment;
 import com.lambdaschool.orders.repositories.CustomersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,4 +44,167 @@ public class CustomersServiceImpl
         return custrepos.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer " + id + " Not Found"));
     }
+
+    @Transactional
+    @Override
+    public Customer save(Customer customer)
+    {
+        Customer newCustomer = new Customer();
+
+        if (customer.getCustcode() != 0)
+        {
+            custrepos.findById(customer.getCustcode());
+        }
+
+        newCustomer.setCustname(customer.getCustname());
+        newCustomer.setCustcity(customer.getCustcity());
+        newCustomer.setWorkingarea(customer.getWorkingarea());
+        newCustomer.setCustcountry(customer.getCustcountry());
+        newCustomer.setGrade(customer.getGrade());
+        newCustomer.setOpeningamt(customer.getOpeningamt());
+        newCustomer.setReceiveamt(customer.getReceiveamt());
+        newCustomer.setPaymentamt(customer.getPaymentamt());
+        newCustomer.setOutstandingmat(customer.getOutstandingmat());
+        newCustomer.setPhone(customer.getPhone());
+
+        newCustomer.setAgent(agentsrepo.findById(customer.getAgent()
+        .getAgentcode())
+        .orElseThrow(() -> new EntityNotFoundException("Agent " + customer.getAgent()
+            .getAgentcode() + " Not Found")));
+
+        newCustomer.getOrders()
+                .clear();
+        for (Order o : customer.getOrders())
+        {
+            Order newOrder = new Order(o.getOrdamount(),
+                    o.getAdvanceamount(),
+                    newCustomer,
+                    o.getOrderdescription());
+
+            newOrder.getPayments()
+                    .clear();
+            for (Payment p : o.getPayments())
+            {
+                Payment newPayment = paymentrepos.findById(p.getPaymentid())
+                        .orElseThrow(() -> new EntityNotFoundException("Payment " + p.getPaymentid() + " Not Found"));
+                newOrder.getPayments().add(newPayment);
+            }
+
+            newCustomer.getOrders()
+                    .add(newOrder);
+        }
+        return custrepos.save(newCustomer);
+    }
+
+    @Transactional
+    @Override
+    public Customer update(
+            Customer customer,
+            long id)
+    {
+        Customer currentCustomer = custrepos.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Customer " + id + " Not Found"));
+
+        if(customer.getCustname() != null)
+        {
+            currentCustomer.setCustname(customer.getCustname());
+        }
+
+        if(customer.getCustname() != null)
+        {
+            currentCustomer.setCustcity(customer.getCustcity());
+        }
+
+        if(customer.getWorkingarea() != null)
+        {
+            currentCustomer.setWorkingarea(customer.getWorkingarea());
+        }
+
+        if(customer.getCustcountry() != null)
+        {
+            currentCustomer.setCustcountry(customer.getCustcountry());
+        }
+
+        if(customer.getGrade() != null)
+        {
+            currentCustomer.setGrade(customer.getGrade());
+        }
+
+        if(customer.hasvalueforopeningamt)
+        {
+            currentCustomer.setOpeningamt(customer.getOpeningamt());
+        }
+
+        if(customer.hasvalueforreceiveamt)
+        {
+            currentCustomer.setReceiveamt(customer.getReceiveamt());
+        }
+
+        if(customer.hasvalueforpaymentamt)
+        {
+            currentCustomer.setPaymentamt(customer.getPaymentamt());
+        }
+
+        if(customer.hasvalueforoutstandingamt)
+        {
+            currentCustomer.setOutstandingmat(customer.getOutstandingmat());
+        }
+
+        if(customer.getPhone() != null)
+        {
+            currentCustomer.setPhone(customer.getPhone());
+        }
+
+        if(customer.getAgent() != null)
+        {
+            currentCustomer.setAgent(agentsrepos.findById(customer.getAgent()
+            .getAgentcode())
+            .orElseThrow(() -> new EntityNotFoundException("Agent " + customer.getAgent()
+            .getAgentcode() + " Not Found")));
+        }
+
+        if(customer.getOrders()
+            .size() > 0)
+        {
+            currentCustomer.getOrders()
+                    .clear();
+            for (Order o : customer.getOrders())
+            {
+                Order currentOrder = new Order(o.getOrdamount(),
+                        o.getAdvanceamount(),
+                        currentCustomer,
+                        o.getOrderdescription());
+
+                currentOrder.getPayments()
+                        .clear();
+                for(Payment p : o.getPayments())
+                {
+                    Payment newPayment = paymentrepos.findById(p.getPaymentid())
+                            .orElseThrow(() -> new EntityNotFoundException("Payment " + id + " Not Found"));
+                    currentOrder.getPayments().add(newPayment);
+
+                }
+
+                currentCustomer.getOrders()
+                    .add(currentOrder);
+            }
+
+        }
+        return custrepos.save(currentCustomer);
+    }
+
+    @Transactional
+    @Override
+    public void delete(long id)
+    {
+        if(custrepos.findById(id)
+                .isPresent())
+        {
+                custrepos.deleteById(id);
+        } else
+        {
+                throw new EntityNotFoundException("Customer " + id + " Not Found");
+        }
+    }
+
 }
