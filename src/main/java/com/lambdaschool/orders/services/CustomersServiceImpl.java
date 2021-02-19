@@ -3,7 +3,9 @@ package com.lambdaschool.orders.services;
 import com.lambdaschool.orders.models.Customer;
 import com.lambdaschool.orders.models.Order;
 import com.lambdaschool.orders.models.Payment;
+import com.lambdaschool.orders.repositories.AgentsRepository;
 import com.lambdaschool.orders.repositories.CustomersRepository;
+import com.lambdaschool.orders.repositories.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,12 @@ public class CustomersServiceImpl
 {
     @Autowired
     private CustomersRepository custrepos;
+
+    @Autowired
+    private AgentsRepository agentsrepos;
+
+    @Autowired
+    private PaymentRepository paymentrepos;
 
     @Override
     public List<Customer> findAllCustomers()
@@ -67,7 +75,7 @@ public class CustomersServiceImpl
         newCustomer.setOutstandingmat(customer.getOutstandingmat());
         newCustomer.setPhone(customer.getPhone());
 
-        newCustomer.setAgent(agentsrepo.findById(customer.getAgent()
+        newCustomer.setAgent(agentsrepos.findById(customer.getAgent()
         .getAgentcode())
         .orElseThrow(() -> new EntityNotFoundException("Agent " + customer.getAgent()
             .getAgentcode() + " Not Found")));
