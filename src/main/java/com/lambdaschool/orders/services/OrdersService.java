@@ -8,5 +8,9 @@ public interface OrdersService
 {
     List<Order>findOrdersWithAdvanceAmount();
 
-    Order findOrdersById(long ordernum);
+    Order findOrdersById(long id); //ordernum   <-was this before???
+
+    Order save(Order order);
+
+    void delete(long id);
 }
